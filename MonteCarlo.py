@@ -1,7 +1,7 @@
 import numpy as np 
 import math
 import scipy
-from ParticleClass import decayConst
+#sfrom ParticleClass import Nuclei, RadioNuclei
 
 def randomNumber(min:float, max:float):
     """
@@ -19,14 +19,14 @@ def crudeMonteCarlo(sampleNum):
     FuncX may be any function assuming that the value returned is a probability between 0 and 1
     """
     
-    sampleSum = 0.0
+    runningTot = 0.0
 
     for i in range(sampleNum):
         x = randomNumber(0,1)
-        if x<= FuncX():
-            sampleSum += 1
+        if x <= FuncX():
+            runningTot += 1
     
-    return float(sampleSum/sampleNum)
+    return float(runningTot/sampleNum)
 
 
 def FuncX():
@@ -38,10 +38,30 @@ def FuncX():
     """
     deltaT = 3000.0
 
-    lamda = decayConst('14C')
-
-    P= lamda * deltaT
+    Dconst = 0.00012096809
+    P= Dconst * deltaT
 
     return P
 
+def crudeVariance(sampleNum):
+    sampleSum = 0.0
+
+    for i in range(sampleNum):
+        x = randomNumber(0,1)
+        if x <= FuncX():
+            sampleSum += 1
+    
+    return  float(sampleSum**2/sampleNum) - float(sampleSum/sampleNum)**2
+
 print(crudeMonteCarlo(10000))
+print(crudeVariance(10000))
+"""
+Importance sampling method
+
+f(x) as an exponential decay
+g(x) as Aexp(-lambda x)
+1= 0-inf integrate g(x) dx ... A=lambda
+
+"""
+
+
