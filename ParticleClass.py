@@ -52,5 +52,3 @@ class RadioNuclei(Nuclei):
         if not self.stable:
             self = RadioNuclei(self.name)
         return self,Erelease
-
-
