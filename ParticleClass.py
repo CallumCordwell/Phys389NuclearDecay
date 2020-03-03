@@ -36,7 +36,7 @@ class RadioNuclei(Nuclei):
     def __init__(self,name):
         i = Isotope(name)
         super(RadioNuclei,self).__init__(name)
-        self.decayConst = i.decay_const(i.optimum_units(),unc=False), i.optimum_units()
+        self.decayConst = i.decay_const(i.optimum_units(),unc=False)
         self.daughters = np.array(i.decay_products())
     
     
@@ -54,13 +54,3 @@ class RadioNuclei(Nuclei):
         return self,Erelease
 
 
-C = RadioNuclei('212BI')
-
-print(C.name)
-print(C.daughters)
-
-while not C.stable:
-    C , DEnergy = C.decay(0)
-    print(C.name)
-    print(C.stable)
-    print(DEnergy)
