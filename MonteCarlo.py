@@ -3,8 +3,11 @@ import math
 import scipy
 import pandas as pd
 import matplotlib.pyplot as plt
-#from ParticleClass import Nuclei, RadioNuclei
+
+from ParticleClass import Nuclei, RadioNuclei
+
 e=np.e
+
 def randomNumber(min:float, max:float):
     """
     This function gets a random number from a uniform distribution between
@@ -63,26 +66,16 @@ def Variance(sampleNum):
     return  sumofsqs-sqavg
 
 
-t = 1000
-T=t
-N=10000
-Array = np.array([[N,0]])
-plt.plot(Array,Array)
-while N > 1:
-    N -= int(crudeMonteCarlo(N,t))
-    Array = np.append(Array,[[N,T]], axis=0)
-    T+=t
-
-
-D = pd.DataFrame(Array, columns=('Time,y', 'Number of C14 nuclei'))
-print(D)
-D.to_csv('NucDecay.csv')
-plt.plot(Array[:,0],Array[:,1])
-plt.title('Decay of Carbon 14 nuclei using Monte Carlo method')
-plt.xlabel('Time, years')
-plt.ylabel('Number of C14 nuclei')
-plt.show()
-
-fig = plt.plot(Array[:,1],Array[:,0])
-plt.show(fig)
-
+def ObjectMonteCarlo(sample, t ):
+    """
+    A variant of the Monte Carlo simulation designed to run using a Nuclei object
+    will run for sampleNum number of times and return and average number of sucesses
+    FuncX may be any function assuming that the value returned is a probability between 0 and 1
+    """
+    
+    x = randomNumber(0,1)
+    P = sample.decayConst * t
+    if x<=P:
+        return True
+    else:
+        return False
