@@ -15,7 +15,7 @@ def creation():
     global Tend
     t = 1000
     i = 0
-    Tend = 10000
+    Tend = 6000
     Particles = np.array([])
     Names = np.array([])
     while i<10:
@@ -27,8 +27,10 @@ def timeloop(Nucleus, t, path=0):
     if Nucleus.stable:
         return Nucleus , 0
     else:
-        Nucleus , DEnergy = Nucleus.decay(path)
-        return Nucleus , DEnergy
+        if ObjectMonteCarlo(Nucleus,t):
+            Nucleus , DEnergy = Nucleus.decay(path)
+            return Nucleus , DEnergy
+    return Nucleus , 0
 
 TotalE = 0
 N=0
@@ -40,7 +42,7 @@ while N<NT:
     while T<Tend:
         i=0
         for cell in Particles:
-            Particles[i], DEnergy = timeloop(cell,T)
+            Particles[i], DEnergy = timeloop(cell,t)
             Names[i] = Particles[i].name
             TotalE +=DEnergy
             i+=1
