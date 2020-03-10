@@ -4,10 +4,12 @@ import math
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
-
-from MonteCarlo import ObjectMonteCarlo
+import pytest
+import MonteCarlo as MC
 from ParticleClass import Nuclei, RadioNuclei
+
 start_time = time.time()
+
 def reset():
     global Particles
     global Names
@@ -23,18 +25,9 @@ def reset():
         Names = np.append(Names, Particles[i].name)
         i+=1
 
-def timeloop(Nucleus, t, path=0):
-    if Nucleus.stable:
-        return Nucleus , 0
-    else:
-        if ObjectMonteCarlo(Nucleus,t):
-            Nucleus , DEnergy = Nucleus.decay(path)
-            return Nucleus , DEnergy
-    return Nucleus , 0
-
 
 t = 1000
-Tend = 30000
+Tend = 2000
 EndEnergy = np.array([])
 Stability = np.zeros([(int(Tend/t)),2]) #+1 as the time step starts at 0, remove if starting at T=t
 
@@ -49,7 +42,7 @@ while N<NT:
         i=0
         if not T==0:
             for cell in Particles:
-                Particles[i], DE = timeloop(cell,t)
+                Particles[i], DE = MC.decayloop(cell,t)
                 Names[i] = Particles[i].name
                 DEnergy +=DE
                 i+=1
