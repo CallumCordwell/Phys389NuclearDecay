@@ -32,7 +32,6 @@ def timeloop(Nucleus, t, path=0):
             return Nucleus , DEnergy
     return Nucleus , 0
 
-
 t = 1000
 Tend = 30000
 EndEnergy = np.array([])
