@@ -25,7 +25,7 @@ def reset():
         i+=1
 
 t = 1000
-Tend = 30000
+Tend = 2000
 EndEnergy = np.array([])
 Stability = np.zeros([(int(Tend/t)),2]) #+1 as the time step starts at 0, remove if starting at T=t
 
