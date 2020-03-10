@@ -1,6 +1,7 @@
 from npat import Isotope
 import numpy as np
 from scipy import constants
+import pytest
 """
 cheat sheet for npat Isotope interactions
 i= Isotope('14C')
@@ -51,4 +52,4 @@ class RadioNuclei(Nuclei):
         self = decayprod
         if not self.stable:
             self = RadioNuclei(self.name)
-        return self,Erelease
+        return self ,Erelease

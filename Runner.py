@@ -4,7 +4,6 @@ import math
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
-import pytest
 import MonteCarlo as MC
 from ParticleClass import Nuclei, RadioNuclei
 
@@ -24,7 +23,6 @@ def reset():
         Particles =np.append(Particles,[RadioNuclei('14C')])
         Names = np.append(Names, Particles[i].name)
         i+=1
-
 
 t = 1000
 Tend = 2000
