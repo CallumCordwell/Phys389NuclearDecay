@@ -6,9 +6,7 @@ import matplotlib.pyplot as plt
 
 from ParticleClass import Nuclei, RadioNuclei
 
-e=np.e
-
-def randomNumber(min:float, max:float):
+def randomNumber(min, max):
     """
     This function gets a random number from a uniform distribution between
     the inputted minimum and maximum inclusive
@@ -27,18 +25,18 @@ def crudeMonteCarlo(sampleNum, t ):
     runningTot = 0.0
 
     for i in range(sampleNum):
+        print('loop')
         x = randomNumber(0,1)
-        runningTot += FuncX(x, t)
+        runningTot += Probability(x, t)
 
     return float(runningTot)
 
 
-def FuncX(x,deltaT):
+def Probability(x,deltaT):
     """
     A calculation to find the probability of decay of a given particle
+    Uses the decay constant of carbon 14
     Returns a probability between 0,1
-    
-    In future will take in a particle class as use the decay constant of that particle as lamda
     """
 
     Dconst = 0.00012096809
@@ -69,8 +67,7 @@ def Variance(sampleNum):
 def ObjectMonteCarlo(sample, t ):
     """
     A variant of the Monte Carlo simulation designed to run using a Nuclei object
-    will run for sampleNum number of times and return and average number of sucesses
-    FuncX may be any function assuming that the value returned is a probability between 0 and 1
+    Uses the decay constant of the Nuclei and the random number generator to determine whether it decays
     """
     
     x = randomNumber(0,1)
@@ -79,3 +76,10 @@ def ObjectMonteCarlo(sample, t ):
         return True
     else:
         return False
+
+def decayloop(Nucleus, t, path=0):
+    if not Nucleus.stable:
+        if ObjectMonteCarlo(Nucleus,t):
+            Nucleus , DEnergy = Nucleus.decay(path)
+            return Nucleus , DEnergy
+    return Nucleus , 0
