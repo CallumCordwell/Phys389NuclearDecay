@@ -1,7 +1,8 @@
 from npat import Isotope
 import numpy as np
 from scipy import constants
-import pytest
+
+
 """
 cheat sheet for npat Isotope interactions
 i= Isotope('14C')
@@ -22,6 +23,12 @@ class Nuclei(object):
         self.mass = i.mass
         self.stable = i.stable
     
+    def __eq__(self, other):
+        if not isinstance(other, RadioNuclei):
+            return False
+        
+        return (self.name == other.name) and (self.mass == other.mass) and (self.stable == other.stable)
+    
     def MassDefect(self,child):
         """
         Finds the mass difference and the energy released from the nuclear decay
@@ -32,6 +39,7 @@ class Nuclei(object):
         energy = Dmass * c**2
 
         return energy
+
 
 class RadioNuclei(Nuclei):
     def __init__(self,name):
@@ -47,9 +55,25 @@ class RadioNuclei(Nuclei):
         child is an integer that refers to an index in the daughter array
         Also uses MassDefect function to return the energy released in the decay
         """
-        decayprod = Nuclei(self.daughters.item((child,0)))
+        i = self.decayPath()
+        decayprod = Nuclei(self.daughters.item((child,i)))
         Erelease = self.MassDefect(decayprod)
-        self = decayprod
-        if not self.stable:
-            self = RadioNuclei(self.name)
-        return self ,Erelease
+        New = decayprod
+        if not New.stable:
+            New = RadioNuclei(New.name)
+        return New , Erelease
+    
+    def decayPath(self):
+        paths=np.array(self.daughters[:,1],dtype=float)
+        PathsProb = np.sum(paths)
+
+        P = np.random.uniform(0,PathsProb)
+
+        x = 0
+        for i, cell in enumerate(paths): 
+            x+=cell
+            if P<= x:
+                break
+        return i
+            
+
