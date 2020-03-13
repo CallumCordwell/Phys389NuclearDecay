@@ -26,19 +26,18 @@ def crudeMonteCarlo(sampleNum, t ):
 
     for i in range(sampleNum):
         print('loop')
-        x = randomNumber(0,1)
-        runningTot += Probability(x, t)
+        runningTot += Probability(t)
 
     return float(runningTot)
 
 
-def Probability(x,deltaT):
+def Probability(deltaT):
     """
     A calculation to find the probability of decay of a given particle
     Uses the decay constant of carbon 14
     Returns a probability between 0,1
     """
-
+    x = randomNumber(0,1)
     Dconst = 0.00012096809
     P= Dconst * deltaT
 
@@ -83,3 +82,46 @@ def decayloop(Nucleus, t, path=0):
             Nucleus , DEnergy = Nucleus.decay(path)
             return Nucleus , DEnergy
     return Nucleus , 0
+
+def timestep(t,Particles):
+    i=0
+    DEnergy = 0
+    instability = 0
+    for cell in Particles:
+        Particles[i], DE = decayloop(cell,t)
+        DEnergy +=DE
+        
+        
+        if not Particles[i].stable:
+            instability+=1
+        
+        i+=1
+    return Particles, DEnergy, instability
+
+
+def StandardDeviationAnalysis():
+    array = np.array([])
+    i=0
+    j=0
+    x=0
+    while j<1000:
+        while  i<100:
+            x+= Probability(3000)
+            
+            i+=1
+        array = np.append(array,x/1000)
+        x=0
+        j+=1
+        i=0
+
+    D = pd.DataFrame(array)
+    D.to_csv('randomnumberanalysis.csv')
+
+    plt.plot(array)
+    plt.title('Probability estimation for 100 attempts')
+    plt.xlabel('Event number')
+    plt.ylabel('Average number of passes')
+    plt.show()
+
+
+        
