@@ -19,44 +19,36 @@ def reset():
     Particles = np.array([])
     Names = np.array([])
     Energy = np.array([])
-    while i<20:
+    while i<10:
         Particles =np.append(Particles,[RadioNuclei('14C')])
-        Names = np.append(Names, Particles[i].name)
         i+=1
 
 t = 1000
-Tend = 2000
+Tend = 30000
 EndEnergy = np.array([])
 Stability = np.zeros([(int(Tend/t)),2]) #+1 as the time step starts at 0, remove if starting at T=t
 
 N=0
-NT=100
-DataArray = np.empty([20])
+NT=200
+DataArray = np.empty([10])
 DataArray = [DataArray]
 while N<NT:
     reset()
     T=0
+    
     while T<Tend:
-        i=0
         if not T==0:
-            for cell in Particles:
-                Particles[i], DE = MC.decayloop(cell,t)
-                Names[i] = Particles[i].name
-                DEnergy +=DE
-                i+=1
-        
-        DataArray = np.append(DataArray,[Names] ,axis=0)
-        Energy=np.append(Energy,DEnergy)
-        DEnergy=0
-        #Each time step data averaged over the whole Monte Carlo Sim
-        i=0
-        Stability[int(T/t)][1] = T
+            Particles, DEnergy, instability = MC.timestep(t,Particles)
+        else:
+            DEnergy = 0
+            instability = Particles.size
+        array = np.array([])
         for cell in Particles:
-            if Particles[i].stable:
-                pass 
-            else:
-                Stability[int(T/t)][0] += 1 
-            i+=1
+            array = np.append(array, cell.name)
+        DataArray = np.append(DataArray,[array],axis=0)
+        Energy = np.append(Energy,DEnergy)
+        Stability[int(T/t)][1] = T
+        Stability[int(T/t)][0] += instability
         T+=t
 
     #End of each Monte Carlo loop data
