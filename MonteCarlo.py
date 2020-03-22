@@ -3,6 +3,7 @@ import math
 import scipy
 import pandas as pd
 import matplotlib.pyplot as plt
+import threading
 
 from ParticleClass import Nuclei, RadioNuclei
 
@@ -25,7 +26,6 @@ def crudeMonteCarlo(sampleNum, t ):
     runningTot = 0.0
 
     for i in range(sampleNum):
-        print('loop')
         runningTot += Probability(t)
 
     return float(runningTot)
@@ -123,28 +123,30 @@ def StandardDeviationAnalysis():
     plt.ylabel('Average number of passes')
     plt.show()
 
-def Mutlitimestep(t,Particles,q):
-    i=0
-    DEnergy = 0
-    instability = 0
-    for cell in Particles:
-        Particles[i], DE = decayloop(cell,t)
-        DEnergy +=DE
-        
-        
-        if not Particles[i].stable:
-            instability+=1
-        
-        i+=1
-    q.put([Particles,DEnergy,instability])
+def Mutlitimestep(Tend,Particles,tstep,q):
+    Energy = np.zeros((1,2))
+    UnstableNum = np.array([[0,Particles.size]])
+    T=tstep
+    TotalEnergy = 0
+    while T<=Tend:
+        Particles, DEnergy, instability = timestep(tstep,Particles)
+        TotalEnergy +=DEnergy
+        Energy = np.append(Energy,[[T,TotalEnergy]],axis=0)
+        UnstableNum = np.append(UnstableNum,[[T,instability]],axis=0)
+        T+=tstep
+    queueLock.acquire()
+    q.put([Energy , UnstableNum])
+    queueLock.release()
 
 def MonteCarloLoop(Tend,Particles,tstep):
     Energy = np.zeros((1,2))
     UnstableNum = np.array([[0,Particles.size]])
     T=tstep
-    while T<Tend:
+    TotalEnergy = 0
+    while T<=Tend:
         Particles, DEnergy, instability = timestep(tstep,Particles)
-        Energy = np.append(Energy,[[T,DEnergy]],axis=0)
+        TotalEnergy +=DEnergy
+        Energy = np.append(Energy,[[T,TotalEnergy]],axis=0)
         UnstableNum = np.append(UnstableNum,[[T,instability]],axis=0)
         T+=tstep
     return Energy , UnstableNum
