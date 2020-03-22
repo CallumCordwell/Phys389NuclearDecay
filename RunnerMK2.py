@@ -7,14 +7,29 @@ import time
 import MonteCarlo as MC
 from ParticleClass import Nuclei, RadioNuclei
 
+def DataPlot(array):
+    D = pd.DataFrame(array)
+    #print(Stability)
+    #DataArray = np.append(DataArray, EndEnergy[:,None] ,axis=1)
+    D.to_csv('NucDecay.csv')
+
+    plt.plot(array[:,0] , array[:,1])
+    plt.title('Average decay energy released for 10 atoms of C14 decay')
+    plt.xlabel('Time, y')
+    plt.ylabel('Average decay energy release')
+    plt.show()
+
+
+
+
 start_time = time.time()
 
 
 MCNum = 100
 tstep=1000
-Tend=15000
-Energy = np.zeros((int(Tend/tstep),2), dtype=float)
-stability = np.zeros((int(Tend/tstep),2))
+Tend=5000
+Energy = np.zeros((int(Tend/tstep +1),2), dtype=float)
+stability = np.zeros((int(Tend/tstep +1),2))
 
 
 for i in range(MCNum):
@@ -32,8 +47,8 @@ Energy /= MCNum
 
 EndEnergy = np.sum(Energy[:,1])
 
-print(EndEnergy)
-
+print(Energy)
+print(stability)
 
 
 print("--- %s seconds ---" % (time.time() - start_time))
