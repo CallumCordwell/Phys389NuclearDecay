@@ -11,7 +11,7 @@ import MultiProc
 def DataPlot(array):
     """
     Plots a matplotlib graph for the given array
-    Takes in an array of data to output a pandas dataframe and a matplotlib graph
+    Takes in an array to output a pandas dataframe and a matplotlib graph
     """
     D = pd.DataFrame(array)
     D.to_csv('NucDecay.csv')
