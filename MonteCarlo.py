@@ -123,22 +123,13 @@ def StandardDeviationAnalysis():
     plt.ylabel('Average number of passes')
     plt.show()
 
-def Mutlitimestep(Tend,Particles,tstep,q):
-    Energy = np.zeros((1,2))
-    UnstableNum = np.array([[0,Particles.size]])
-    T=tstep
-    TotalEnergy = 0
-    while T<=Tend:
-        Particles, DEnergy, instability = timestep(tstep,Particles)
-        TotalEnergy +=DEnergy
-        Energy = np.append(Energy,[[T,TotalEnergy]],axis=0)
-        UnstableNum = np.append(UnstableNum,[[T,instability]],axis=0)
-        T+=tstep
-    queueLock.acquire()
-    q.put([Energy , UnstableNum])
-    queueLock.release()
 
 def MonteCarloLoop(Tend,Particles,tstep):
+"""
+Function to run a Monte Carlo simulation over a given period for an array of nuclei
+Takes in end time top timit, the timestep, and an array of nuclei to run the checks per timestep
+Assumes at T=0 all the particles are as inputted and \Delta E = 0
+"""
     Energy = np.zeros((1,2))
     UnstableNum = np.array([[0,Particles.size]])
     T=tstep
