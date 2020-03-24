@@ -105,12 +105,17 @@ def timestep(t,Particles):
         newArray[i], DE = decayloop(cell,t)
         DEnergy +=DE
         i+=1
+    instability = 0
+    for cell in newArray:
+        if not cell.stable:
+            instability+=1
     return newArray, DEnergy
 
 
 def StandardDeviationAnalysis():
     """
     Function to analyse the standard deviation of the random number generator used
+    Produces a pandas dataframe and a matplotlib graph of the range of random numbers produced.
     """
     array = np.array([])
     i=0
@@ -145,15 +150,16 @@ def MonteCarloLoop(Tend,Particles,tstep):
     Energy = np.zeros((1,2))
     UnstableNum = np.array([[0,Particles.size]])
     T=tstep
-    TotalEnergy = 0
+
     while T<=Tend:
+        instability = 0
         Particles, DEnergy = timestep(tstep,Particles)
-        TotalEnergy +=DEnergy
         for cell in Particles:
             if not cell.stable:
                 instability+=1
         
-        Energy = np.append(Energy,[[T,TotalEnergy]],axis=0)
+        Energy = np.append(Energy,[[T,DEnergy]],axis=0)
         UnstableNum = np.append(UnstableNum,[[T,instability]],axis=0)
         T+=tstep
+
     return Energy , UnstableNum
