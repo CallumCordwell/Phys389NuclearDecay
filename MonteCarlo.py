@@ -33,9 +33,9 @@ def crudeMonteCarlo(sampleNum, t ):
 
 def Probability(deltaT):
     """
-    A calculation to find the probability of decay of a given particle
+    A comparison to find if a given particle decays in timestep deltaT
     Uses the decay constant of carbon 14
-    Returns a probability between 0,1
+    Returns 1 if the particle decays and 0 if it doesn't
     """
     x = randomNumber(0,1)
     Dconst = 0.00012096809
@@ -47,6 +47,10 @@ def Probability(deltaT):
         return 0
 
 def Variance(sampleNum):
+    """
+    Legacy code to find the variance of a function f_of_x
+    Unusable in this simulation given the true/false nature of the experiment so a different way to calculate vairance is needed 
+    """
     runningSum = 0.0
 
     for i in range(sampleNum):
@@ -76,30 +80,38 @@ def ObjectMonteCarlo(sample, t ):
     else:
         return False
 
-def decayloop(Nucleus, t, path=0):
+def decayloop(Nucleus, t):
+    """
+    Using an unstable nucleus runs the ObjectMonteCarlo function to determine if it decays
+    Takes in a nucleus and a timestep to pass to the Monte Carlo function
+    Returns the new nucleus and the decay energy released
+    """
     if not Nucleus.stable:
         if ObjectMonteCarlo(Nucleus,t):
-            Nucleus , DEnergy = Nucleus.decay(path)
+            Nucleus , DEnergy = Nucleus.decay()
             return Nucleus , DEnergy
     return Nucleus , 0
 
 def timestep(t,Particles):
+    """
+    Runs the functions for each timestep t in the simulation
+    takes in an array of particles and a float as the timestep
+    returns the updated array of particles and the decay energy released in this timestep
+    """
     i=0
     DEnergy = 0
-    instability = 0
+    newArray=Particles
     for cell in Particles:
-        Particles[i], DE = decayloop(cell,t)
+        newArray[i], DE = decayloop(cell,t)
         DEnergy +=DE
-        
-        
-        if not Particles[i].stable:
-            instability+=1
-        
         i+=1
-    return Particles, DEnergy, instability
+    return newArray, DEnergy
 
 
 def StandardDeviationAnalysis():
+    """
+    Function to analyse the standard deviation of the random number generator used
+    """
     array = np.array([])
     i=0
     j=0
@@ -125,21 +137,23 @@ def StandardDeviationAnalysis():
 
 
 def MonteCarloLoop(Tend,Particles,tstep):
-"""
-Function to run a Monte Carlo simulation over a given period for an array of nuclei
-Takes in end time top timit, the timestep, and an array of nuclei to run the checks per timestep
-Assumes at T=0 all the particles are as inputted and \Delta E = 0
-"""
+    """
+    Function to run a Monte Carlo simulation over a given period for an array of nuclei
+    Takes in end time timit, the timestep, and an array of nuclei to run the checks per timestep
+    Assumes at T=0 all the particles are as inputted and Delta E = 0
+    """
     Energy = np.zeros((1,2))
     UnstableNum = np.array([[0,Particles.size]])
     T=tstep
     TotalEnergy = 0
     while T<=Tend:
-        Particles, DEnergy, instability = timestep(tstep,Particles)
+        Particles, DEnergy = timestep(tstep,Particles)
         TotalEnergy +=DEnergy
+        for cell in Particles:
+            if not cell.stable:
+                instability+=1
+        
         Energy = np.append(Energy,[[T,TotalEnergy]],axis=0)
         UnstableNum = np.append(UnstableNum,[[T,instability]],axis=0)
         T+=tstep
     return Energy , UnstableNum
-
-
