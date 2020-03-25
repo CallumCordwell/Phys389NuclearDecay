@@ -143,6 +143,13 @@ def MonteCarloLoop(Tend,Particles,tstep):
     return Energy , UnstableNum
 
 def MultiProcLoop(Tend,Particles,tstep,SimList):
+    """
+    Similar to the MonteCarloLoop function will run a full monte carlo simmulation over a given time period
+    Created to be run alongside the multiprocessing function in MultiProc.py
+    Takes in Tend,Particles and tstep to run the monte carlo simulation every tstep until Tend on the nuclei in particles array
+    SimList is a list of 0 to the number of Monte Carlo sims to be run, not used but the multiprocessing pool requires to send an iterable of numbers
+    Returns the array of unstable particle number and cummulative energy released at each timestep 
+    """
     Energy = np.zeros((1,2))
     UnstableNum = np.array([[0,Particles.size]])
     T=tstep
