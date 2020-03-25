@@ -7,14 +7,11 @@ import time
 import MonteCarlo as MC
 from ParticleClass import Nuclei, RadioNuclei
 
-def DataPlot(array):
-<<<<<<< HEAD
+def dataPlot(array):
     """
     Plots a matplotlib graph for the given array
     Takes in an array to output a pandas dataframe and a matplotlib graph
     """
-=======
->>>>>>> parent of 255e39c... Update RunnerMK2.py
     D = pd.DataFrame(array)
     #print(Stability)
     #DataArray = np.append(DataArray, EndEnergy[:,None] ,axis=1)
@@ -56,6 +53,6 @@ EndEnergy = np.sum(Energy[:,1])
 
 print(Energy)
 print(stability)
-
+dataPlot(stability)
 
 print("--- %s seconds ---" % (time.time() - start_time))
