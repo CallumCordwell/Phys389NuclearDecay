@@ -32,18 +32,18 @@ start_time = time.time()
 
 
 MCNum = 100
-tstep=1000
-Tend=5000
+tstep=500
+Tend=30000
 Energy = np.zeros((int(Tend/tstep +1),2), dtype=float)
 stability = np.zeros((int(Tend/tstep +1),2))
 
+Particles = np.array([])
+for i in range(10):
+    Particles =np.append(Particles,[RadioNuclei('14C')])
 
 for i in range(MCNum):
-    Particles = np.array([])
-    for i in range(10):
-        Particles =np.append(Particles,[RadioNuclei('14C')])
-    
-    DEnergy, LoopStability = MC.MonteCarloLoop(Tend,Particles,tstep)
+    TempParticles = np.array(Particles)
+    DEnergy, LoopStability = MC.MonteCarloLoop(Tend,TempParticles,tstep)
 
     stability = np.add(stability,LoopStability)
     Energy = np.add(Energy, DEnergy)
@@ -53,7 +53,7 @@ Energy /= MCNum
 
 EndEnergy = np.sum(Energy[:,1])
 
-print(Energy)
+#print(Energy)
 print(stability)
 dataPlot(stability)
 
