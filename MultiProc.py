@@ -39,9 +39,9 @@ def startUp():
         Particles =np.append(Particles,[RadioNuclei('14C')])
         i+=1
 
-    MCNum = 50000
+    MCNum = 50
     tstep=100
-    Tend=60000
+    Tend=6000
 
     return MCNum,tstep,Tend,Particles
 
