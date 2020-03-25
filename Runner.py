@@ -6,7 +6,9 @@ import matplotlib.pyplot as plt
 import time
 import MonteCarlo as MC
 from ParticleClass import Nuclei, RadioNuclei
-
+"""
+Runs the monte carlo sim without multiprocessing using MonteCarloLoop
+"""
 def dataPlot(array):
     """
     Plots a matplotlib graph for the given array
@@ -23,23 +25,38 @@ def dataPlot(array):
     plt.ylabel('Average decay energy release')
     plt.show()
 
-"""
-Runs the monte carlo sim without multiprocessing using MonteCarloLoop
-"""
 
+def CreateParticles(ToBeMade):
+    """
+    Creates particles dictated by the array supplied
+    Supplied array needs to be of form [[x_1,name_1],[x_2,name_2]...] where x_i is the number of nuclei of a type to be made and name_i is the isotope to be made
+    """
+    Particles = np.array([])
+    for row in ToBeMade:
+        for i in range(0,int(row[0])):
+            Particles =np.append(Particles,[RadioNuclei(row[1])])
+
+    return Particles
+
+def SmallestHalfLife(Particles):
+    half_lives = np.array([])
+    for each in Particles:
+        half_lives = np.append(half_lives,each.halfLife)
+    minHL = np.amin(half_lives)
+    return minHL/10
 
 start_time = time.time()
 
 
-MCNum = 100
+MCNum = 10
 tstep=500
 Tend=30000
 Energy = np.zeros((int(Tend/tstep +1),2), dtype=float)
 stability = np.zeros((int(Tend/tstep +1),2))
+ToBeMade = np.array([['10',"14C"]])
+Particles = CreateParticles(ToBeMade)
+minHalfLife = SmallestHalfLife(Particles)
 
-Particles = np.array([])
-for i in range(10):
-    Particles =np.append(Particles,[RadioNuclei('14C')])
 
 for i in range(MCNum):
     TempParticles = np.array(Particles)
