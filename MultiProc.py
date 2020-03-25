@@ -55,7 +55,7 @@ def CreateandRunThreads(num,Tend,tstep,Particles):
         TempEnergy , TempStability = q.get()
         energy = np.add(energy, TempEnergy)
         stability = np.add(stability,TempStability)
-    return (energy/num), (stability/num)
+    return (energy), (stability)
 
 
 
