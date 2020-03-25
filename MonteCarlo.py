@@ -143,7 +143,7 @@ def StandardDeviationAnalysis():
 
 def MonteCarloLoop(Tend,Particles,tstep):
     """
-    Function to run a Monte Carlo simulation over a given period for an array of nuclei
+    Function to run a Monte Carlo simulation over a given period for an array of nuclei#
     Takes in end time timit, the timestep, and an array of nuclei to run the checks per timestep
     Assumes at T=0 all the particles are as inputted and Delta E = 0
     """
@@ -161,5 +161,29 @@ def MonteCarloLoop(Tend,Particles,tstep):
         Energy = np.append(Energy,[[T,DEnergy]],axis=0)
         UnstableNum = np.append(UnstableNum,[[T,instability]],axis=0)
         T+=tstep
-
     return Energy , UnstableNum
+
+def MultiProcLoop(Tend,Particles,tstep,SimList):
+    """
+    Similar to the MonteCarloLoop function will run a full monte carlo simmulation over a given time period
+    Created to be run alongside the multiprocessing function in MultiProc.py
+    Takes in Tend,Particles and tstep to run the monte carlo simulation every tstep until Tend on the nuclei in particles array
+    SimList is a list of 0 to the number of Monte Carlo sims to be run, not used but the multiprocessing pool requires to send an iterable of numbers
+    Returns the array of unstable particle number and cummulative energy released at each timestep 
+    """
+    Energy = np.zeros((1,2))
+    UnstableNum = np.array([[0,Particles.size]])
+    T=tstep
+    Particles = np.array([])
+    i=0
+    while i<10:
+        Particles =np.append(Particles,[RadioNuclei('14C')])
+        i+=1
+    TotalEnergy = 0
+    while T<=Tend:
+        Particles, DEnergy, instability = timestep(tstep,Particles)
+        TotalEnergy +=DEnergy
+        Energy = np.append(Energy,[[T,TotalEnergy]],axis=0)
+        UnstableNum = np.append(UnstableNum,[[T,instability]],axis=0)
+        T+=tstep
+    return UnstableNum, Energy

@@ -1,64 +1,83 @@
+from multiprocessing import Pool
+from scipy import constants
 import numpy as np
 import math
+import pandas as pd
+import matplotlib.pyplot as plt
+import time
 import MonteCarlo as MC
-import threading
-import queue
+from ParticleClass import Nuclei, RadioNuclei
+from functools import partial
 
-queueLock = threading.Lock()
-
-
-class myThread(threading.Thread):
+def MyProcess(Tend,Particles,tstep,SimList):
     """
-    Class of processing threads, inherits functionality from Thread Class in threading module
-    Takes in all variables to run functions and defines as self varaibles
+    Function for multiprocessing, this defines the process to be run as func and creates a pool of functions waiting to be run as a processor becomes available
+    Will run a process for each iterable in SimList
+    Takes in Tend,Particles, and tstep to pass to the MonteCarlo function
+    returns a list of outputs from the pool (list of lists of numpy array)
     """
-    def __init__(self,ID,q,Particles,Tend,tstep):
-        threading.Thread.__init__(self)
-        self.id = ID
-        self.tempenergy = np.array([[]])
-        self.tempstability = np.array([[]])
-        self.q=q
-        self.Particles = Particles
-        self.Tend = Tend
-        self.tstep = tstep
-    
-    def run(self):
-        """
-        Primary use of myThread Class, runs the process which requires multithreadding
-        Called from start() function in threading.Thread class runs MonteCarloLoop for each thread
-        Fills queue with arrays from MonteCarloLoop
-        """
-        self.tempenergy, self.tempstability = MC.MonteCarloLoop(self.Tend,self.Particles,self.tstep)
-        queueLock.acquire()
-        self.q=self.q.put([self.tempenergy,self.tempstability])
-        queueLock.release()
+    func = partial(MC.MultiProcLoop, Tend,Particles,tstep)
+    with Pool() as pool:
+        p = pool.map(func,SimList)
+    return p
+
+def dataPlot(array):
+    """
+    Plots a matplotlib graph for the given array, assumes the first column is the x axis and the second is the y axis
+    Requires manual change for axis names and graph title
+    Takes in an array to output a pandas dataframe and a matplotlib graph
+    """
+    D = pd.DataFrame(array)
+    D.to_csv('NucDecay.csv')
+
+    plt.plot(array[:,0] , array[:,1])
+    plt.title('Average decay energy released for 10 atoms of C14 decay')
+    plt.xlabel('Time, y')
+    plt.ylabel('Average decay energy release')
+    plt.show()
+
+def startUp():
+    """
+    Defines the variables for use in the multiprocessing processes
+    returns all the variables needed to run the Monte Carlo sims such as time steps and number of sims to be run 
+    """
+    Particles = np.array([])
+    i=0
+    while i<10:
+        Particles =np.append(Particles,[RadioNuclei('14C')])
+        i+=1
+
+    MCNum = 50
+    tstep=100
+    Tend=6000
+
+    return MCNum,tstep,Tend,Particles
 
 
-def CreateandRunThreads(num,Tend,tstep,Particles):
-    """
-    Creates an array of threads objects for each Monte Carlo simulation and starts each thread
-    Takes in the number of simulations to run, end time for the simulation, and timesteps 
-    Outputs averaged data for each timestep summed over all simulations
-    """
-    q = queue.Queue()
-    threads =[]
+if __name__ ==  "__main__":
+    start_time = time.time()
+
+    MCNum,tstep,Tend,Particles = startUp()
     energy = np.zeros((int((Tend/tstep) + 1),2), dtype=float)
     stability = np.zeros((int((Tend/tstep) + 1),2))
 
-    for each in range(num):
-        thread = myThread(each,q,Particles,Tend,tstep)
-        thread.start()
-        threads.append(thread)
 
-    for thread in threads:
-        thread.join()
-        TempEnergy , TempStability = q.get()
-        energy = np.add(energy, TempEnergy)
-        stability = np.add(stability,TempStability)
-    return (energy/num), (stability/num)
+    print("Starting Threading")
+    SimList = [x for x in range(0,MCNum)]
+    
+    pool = np.array(MyProcess(Tend,Particles,tstep,SimList))
+    
+    stablepool = pool[:,0]
+    energypool = pool[:,1]
+    for each in stablepool:
+        stability = np.add(stability,each)
+    for each in energypool:
+        energy = np.add(energy,each)
 
+    print(stability/MCNum)
+    print(energy/MCNum)
+    
+    print("Exiting Main Thread. Time: %s seconds" % (time.time() - start_time))
 
-
-
-
+    dataPlot(stability/MCNum)
 
