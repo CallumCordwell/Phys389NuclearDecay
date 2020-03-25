@@ -23,7 +23,9 @@ def dataPlot(array):
     plt.ylabel('Average decay energy release')
     plt.show()
 
-
+"""
+Runs the monte carlo sim without multiprocessing using MonteCarloLoop
+"""
 
 
 start_time = time.time()
