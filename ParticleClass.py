@@ -17,6 +17,13 @@ c = constants.speed_of_light
 amu = constants.atomic_mass
 
 class Nuclei(object):
+    """
+    Nuclei object to model each nucleus of the mixture to be modelled
+    Contains variable and functions that all nuclei will use
+    name is a string with the isotope nape e.g. 14C is Carbon 14
+    mass is a float with the isotope mass in amu
+    stable is a boolean which is true if the nucleus is stable
+    """
     def __init__(self, name):
         i = Isotope(name)
         self.name = name
@@ -29,19 +36,25 @@ class Nuclei(object):
         
         return (self.name == other.name) and (self.mass == other.mass) and (self.stable == other.stable)
     
-    def MassDefect(self,child):
+    def MassDefect(self,mother):
         """
         Finds the mass difference and the energy released from the nuclear decay
         Takes the mother and daughter nuclei as inputs
-        Outputs the energy as a float
+        Outputs the energy as a float in Joules
         """
-        Dmass = (self.mass - child.mass)*amu
+        Dmass = (mother.mass - self.mass)*amu
         energy = Dmass * c**2
 
         return energy
 
 
 class RadioNuclei(Nuclei):
+    """
+    Object to model the radioactive nuclei of the mixture
+    Inherits from Nuclei class 
+    decayConst is a float with the decay constant of the isotope
+    daughters is a numpy array of the possible decay products with the first column containing names and the second containing braching ratios
+    """
     def __init__(self,name):
         i = Isotope(name)
         super(RadioNuclei,self).__init__(name)
@@ -49,31 +62,37 @@ class RadioNuclei(Nuclei):
         self.daughters = np.array(i.decay_products())
     
     
-    def decay(self,child):
+    def decay(self):
         """
-        Decays a radionuclei into the defined daughter state
-        child is an integer that refers to an index in the daughter array
-        Also uses MassDefect function to return the energy released in the decay
+        Changes a radionuclei into a daughter state 
+        Uses decayPath function to determine which daughter to create
+        Also uses MassDefect function to find the energy released in the decay
+        returns the Nucleus or Radionucleus object depending on decay result and the decay energy released in joules
         """
-        i = self.decayPath()
-        decayprod = Nuclei(self.daughters.item((child,i)))
-        Erelease = self.MassDefect(decayprod)
-        New = decayprod
-        if not New.stable:
-            New = RadioNuclei(New.name)
-        return New , Erelease
+        child = self.decayPath()
+        decayprod = Nuclei(self.daughters.item((child,0)))
+        Erelease = decayprod.MassDefect(self)
+        if not decayprod.stable:
+            decayprod = RadioNuclei(decayprod.name)
+        return decayprod , Erelease
     
     def decayPath(self):
+        """
+        Determines the decay branch of a decaying nucleus using a random number generator
+        returns an integer as the index in the daughters array that the particle will decay through
+        """
         paths=np.array(self.daughters[:,1],dtype=float)
-        PathsProb = np.sum(paths)
+        if paths.size == 1:
+            i=0
+            return i
+        else:
+            PathsProb = np.sum(paths)
+            P = np.random.uniform(0,PathsProb)
 
-        P = np.random.uniform(0,PathsProb)
-
-        x = 0
-        for i, cell in enumerate(paths): 
-            x+=cell
-            if P<= x:
-                break
-        return i
-            
-
+            x = 0
+            for i, cell in enumerate(paths): 
+                x+=cell
+                if P<= x:
+                    break
+            return i
+                

@@ -24,9 +24,9 @@ def reset():
         i+=1
 
 t = 1000
-Tend = 30000
+Tend = 10000
 EndEnergy = np.array([])
-Stability = np.zeros([(int(Tend/t)),2]) #+1 as the time step starts at 0, remove if starting at T=t
+Stability = np.zeros([(int(Tend/t)+1),2]) #+1 as the time step starts at 0, remove if starting at T=t
 
 N=0
 NT=200
@@ -36,15 +36,17 @@ while N<NT:
     reset()
     T=0
     
-    while T<Tend:
+    while T<=Tend:
+        instability=0
         if not T==0:
-            Particles, DEnergy, instability = MC.timestep(t,Particles)
+            Particles, DEnergy = MC.timestep(t,Particles)
         else:
             DEnergy = 0
-            instability = Particles.size
         array = np.array([])
         for cell in Particles:
             array = np.append(array, cell.name)
+            if not cell.stable:
+                instability+=1
         DataArray = np.append(DataArray,[array],axis=0)
         Energy = np.append(Energy,DEnergy)
         Stability[int(T/t)][1] = T
@@ -55,10 +57,12 @@ while N<NT:
     EndEnergy = np.append(EndEnergy, np.sum(Energy))
     N+=1
 
+
+print(Stability)
+
 DataArray = np.delete(DataArray,0,0)
 Stability[:,0] /=NT
 
-print(np.mean(EndEnergy))
 D = pd.DataFrame(Stability)
 #print(Stability)
 #DataArray = np.append(DataArray, EndEnergy[:,None] ,axis=1)
