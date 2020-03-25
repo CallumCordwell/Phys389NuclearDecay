@@ -181,7 +181,11 @@ def MultiProcLoop(Tend,Particles,tstep,SimList):
         i+=1
     TotalEnergy = 0
     while T<=Tend:
-        Particles, DEnergy, instability = timestep(tstep,Particles)
+        Particles, DEnergy = timestep(tstep,Particles)
+        instability = 0
+        for cell in Particles:
+            if not cell.stable:
+                instability+=1
         TotalEnergy +=DEnergy
         Energy = np.append(Energy,[[T,TotalEnergy]],axis=0)
         UnstableNum = np.append(UnstableNum,[[T,instability]],axis=0)
