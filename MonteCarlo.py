@@ -149,16 +149,19 @@ def MonteCarloLoop(Tend,Particles,tstep):
     """
     Energy = np.zeros((1,2))
     UnstableNum = np.array([[0,Particles.size]])
+
+    TotalEnergy = 0
     T=tstep
 
     while T<=Tend:
         instability = 0
         Particles, DEnergy = timestep(tstep,Particles)
+        TotalEnergy +=DEnergy
         for cell in Particles:
             if not cell.stable:
                 instability+=1
-        
-        Energy = np.append(Energy,[[T,DEnergy]],axis=0)
+
+        Energy = np.append(Energy,[[T,TotalEnergy]],axis=0)
         UnstableNum = np.append(UnstableNum,[[T,instability]],axis=0)
         T+=tstep
     return Energy , UnstableNum
@@ -171,19 +174,18 @@ def MultiProcLoop(Tend,Particles,tstep,SimList):
     SimList is a list of 0 to the number of Monte Carlo sims to be run, not used but the multiprocessing pool requires to send an iterable of numbers
     Returns the array of unstable particle number and cummulative energy released at each timestep 
     """
+    
     Energy = np.zeros((1,2))
     UnstableNum = np.array([[0,Particles.size]])
     T=tstep
-    Particles = np.array([])
-    i=0
-    while i<10:
-        Particles =np.append(Particles,[RadioNuclei('14C')])
-        i+=1
+    TempParticles = np.array(Particles)
+    
     TotalEnergy = 0
     while T<=Tend:
-        Particles, DEnergy = timestep(tstep,Particles)
+        TempParticles, DEnergy = timestep(tstep,TempParticles)
+        
         instability = 0
-        for cell in Particles:
+        for cell in TempParticles:
             if not cell.stable:
                 instability+=1
         TotalEnergy +=DEnergy
