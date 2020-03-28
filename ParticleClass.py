@@ -15,6 +15,8 @@ print(i.decay_products())
 
 c = constants.speed_of_light
 amu = constants.atomic_mass
+m_beta = constants.electron_mass *amu
+m_alpha = Isotope("4HE").mass*amu
 
 class Nuclei(object):
     """
@@ -29,6 +31,7 @@ class Nuclei(object):
         self.name = name
         self.mass = i.mass
         self.stable = i.stable
+        self.nucleons = i.A
     
     def __eq__(self, other):
         if not isinstance(other, RadioNuclei):
@@ -43,6 +46,14 @@ class Nuclei(object):
         Outputs the energy as a float in Joules
         """
         Dmass = (mother.mass - self.mass)*amu
+        
+        if mother.nucleons == self.nucleons:
+            Dmass -= m_beta
+        else:
+            if mother.nucleons == self.nucleons+4:
+                Dmass -= m_alpha
+        
+
         energy = Dmass * c**2
 
         return energy
