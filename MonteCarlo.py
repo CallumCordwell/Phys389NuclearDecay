@@ -105,10 +105,7 @@ def timestep(t,Particles):
         newArray[i], DE = decayloop(cell,t)
         DEnergy +=DE
         i+=1
-    instability = 0
-    for cell in newArray:
-        if not cell.stable:
-            instability+=1
+    
     return newArray, DEnergy
 
 
