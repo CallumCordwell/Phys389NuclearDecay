@@ -17,6 +17,7 @@ c = constants.speed_of_light
 amu = constants.atomic_mass
 m_beta = constants.electron_mass *amu
 m_alpha = Isotope("4HE").mass*amu
+m_neutron = constants.neutron_mass
 
 class Nuclei(object):
     """
@@ -52,7 +53,8 @@ class Nuclei(object):
         else:
             if mother.nucleons == self.nucleons+4:
                 Dmass -= m_alpha
-        
+            else:
+                Dmass -= m_neutron        
 
         energy = Dmass * c**2
 
