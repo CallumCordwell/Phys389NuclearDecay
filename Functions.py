@@ -39,3 +39,21 @@ def SmallestHalfLife(Particles):
         half_lives = np.append(half_lives,each.halfLife)
     minHL = np.amin(half_lives)
     return minHL
+
+
+def theorysigma(decayconst,stability):
+    y=np.array(stability[:,0])
+    sigma=np.array(stability[:,0])
+    yminus=np.array(stability[:,0])
+    yplus=np.array(stability[:,0])
+    i=0
+    for t in stability[:,0]:
+        y[i]=10*math.exp(- decayconst * t)
+        sigma[i]=math.sqrt(10-y[i])
+
+        i+=1
+
+    yplus = np.add(y,sigma)
+    yminus =np.subtract(y,sigma)
+    
+    return y , yplus, yminus
