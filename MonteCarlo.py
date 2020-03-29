@@ -3,7 +3,6 @@ import math
 import scipy
 import pandas as pd
 import matplotlib.pyplot as plt
-import threading
 
 from ParticleClass import Nuclei, RadioNuclei
 
