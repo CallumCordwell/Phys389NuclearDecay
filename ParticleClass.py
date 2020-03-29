@@ -58,8 +58,8 @@ class RadioNuclei(Nuclei):
     def __init__(self,name):
         i = Isotope(name)
         super(RadioNuclei,self).__init__(name)
-        self.decayConst = i.decay_const("y",unc=False)
-        self.halfLife = i.half_life(i.optimum_units(),unc=False)
+        self.decayConst = i.decay_const("s",unc=False)
+        self.halfLife = i.half_life('s',unc=False)
         self.daughters = np.array(i.decay_products())
     
     
