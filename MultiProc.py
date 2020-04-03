@@ -28,7 +28,6 @@ def startUp():
     Defines the variables for use in the multiprocessing processes
     returns all the variables needed to run the Monte Carlo sims such as time steps and number of sims to be run 
     """
-    #ToBeMade = np.array([["10","253FM"],["10","245BK"],['10','186IR']])#["10","231PA"],['10','238PU'],
     ToBeMade = np.array([["10","14C"],["10","231PA"],['10','81KR'],["10","85KR"],['10','171ER'],['10','241AM']])
     Particles = functions.CreateParticles(ToBeMade)
 
