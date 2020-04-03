@@ -17,9 +17,10 @@ def MyProcess(Tend,Particles,tstep,SimList):
     Takes in Tend,Particles, and tstep to pass to the MonteCarlo function
     returns a list of outputs from the pool (list of lists of numpy array)
     """
-    func = partial(MC.MultiProcLoop, Tend,Particles,tstep)
-    with Pool() as pool:
-        p = pool.map(func,SimList)
+    
+    func = partial(MC.MonteCarloLoop, Tend,Particles,tstep)
+    with Pool(8) as pool:
+        p = pool.map(func,SimList,chunksize=1)
     return p
 
 def startUp():
@@ -27,12 +28,13 @@ def startUp():
     Defines the variables for use in the multiprocessing processes
     returns all the variables needed to run the Monte Carlo sims such as time steps and number of sims to be run 
     """
-    ToBeMade = np.array([["10","14C"],["10","231PA"],["5","212BI"],["20","81KR"],["20","85KR"]])
+    #ToBeMade = np.array([["10","253FM"],["10","245BK"],['10','186IR']])#["10","231PA"],['10','238PU'],
+    ToBeMade = np.array([["10","14C"],["10","231PA"],['10','81KR'],["10","85KR"],['10','171ER'],['10','241AM']])
     Particles = functions.CreateParticles(ToBeMade)
 
-    MCNum = 10000
-    tstep=20
-    Tend=150000
+    MCNum = 500
+    tstep=1
+    Tend=20000
 
     return MCNum,tstep,Tend,Particles
 
@@ -41,27 +43,30 @@ if __name__ ==  "__main__":
     start_time = time.time()
 
     MCNum,tstep,Tend,Particles = startUp()
-    energy = np.zeros((int((Tend/tstep) + 1),2), dtype=float)
+    energy = np.zeros((int((Tend/tstep) + 1),2))
     stability = np.zeros((int((Tend/tstep) + 1),2))
+    decays = np.zeros((int((Tend/tstep) + 1),2))
     
 
     print("Starting Threading")
     SimList = [x for x in range(0,MCNum)]
+    pool= np.array(MyProcess(Tend,Particles,tstep,SimList))
     
-    pool = np.array(MyProcess(Tend,Particles,tstep,SimList))
+    pool /= MCNum
+
+    stablepool = pool[:,1]
+    energypool = pool[:,0]
+    decayspool = pool[:,2]
     
-    stablepool = pool[:,0]
-    energypool = pool[:,1]
     for each in stablepool:
         stability = np.add(stability,each)
     for each in energypool:
         energy = np.add(energy,each)
+    for each in decayspool:
+        decays = np.add(decays, each)
 
-    print(stability/MCNum)
-    print(energy/MCNum)
-    
     print("Exiting Main Thread. Time: %s seconds" % (time.time() - start_time))
-
-    functions.dataPlot(stability/MCNum, "StabiltyRan")
-    functions.dataPlot(energy/MCNum,"EnergyRan")
+    functions.dataPlotstab(stability, "Stabilty")
+    functions.dataPlotener(energy,"Energy")
+    functions.dataPlotdecay(decays, "Decays")
 
