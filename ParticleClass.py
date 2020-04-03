@@ -16,16 +16,17 @@ print(i.decay_products())
 c = constants.speed_of_light
 amu = constants.atomic_mass
 m_beta = constants.electron_mass *amu
-m_alpha = Isotope("4HE").mass*amu
+m_alpha = (4.001506179127)*amu
 m_neutron = constants.neutron_mass
 
 class Nuclei(object):
     """
-    Nuclei object to model each nucleus of the mixture to be modelled
+    Nuclei object to model each nucleus of the mixture to be simulated
     Contains variable and functions that all nuclei will use
-    name is a string with the isotope nape e.g. 14C is Carbon 14
-    mass is a float with the isotope mass in amu
-    stable is a boolean which is true if the nucleus is stable
+    name is a string with the nuclide name e.g. 14C is Carbon 14
+    mass is a float with the nuclide mass in amu
+    stable is a boolean which is true if the nuclide is stable
+    nucleons and protons are integers conatining the number of nucleons and protons in the given nuclide
     """
     def __init__(self, name):
         i = Isotope(name)
@@ -33,6 +34,7 @@ class Nuclei(object):
         self.mass = i.mass
         self.stable = i.stable
         self.nucleons = i.A
+        self.protons = i.Z
     
     def __eq__(self, other):
         if not isinstance(other, RadioNuclei):
@@ -43,19 +45,21 @@ class Nuclei(object):
     def MassDefect(self,mother):
         """
         Finds the mass difference and the energy released from the nuclear decay
+        If queries to find which decay type the nucleus has undergone
         Takes the mother and daughter nuclei as inputs
         Outputs the energy as a float in Joules
         """
         Dmass = (mother.mass - self.mass)*amu
         
-        if mother.nucleons == self.nucleons:
-            Dmass -= m_beta
-        else:
-            if mother.nucleons == self.nucleons+4:
-                Dmass -= m_alpha
+        if not mother.protons == self.protons:              #Gamma Decay
+            if mother.nucleons == self.nucleons:            #Beta Decay
+                Dmass -= m_beta
             else:
-                Dmass -= m_neutron        
-
+                if mother.nucleons == self.nucleons+4:      #Alpha Decay
+                    Dmass -= m_alpha
+                else:                                       #Neutron Emission
+                    Dmass -= m_neutron        
+        
         energy = Dmass * c**2
 
         return energy
@@ -71,8 +75,8 @@ class RadioNuclei(Nuclei):
     def __init__(self,name):
         i = Isotope(name)
         super(RadioNuclei,self).__init__(name)
-        self.decayConst = i.decay_const("s",unc=False)
-        self.halfLife = i.half_life('s',unc=False)
+        self.decayConst = i.decay_const("y",unc=False)
+        self.halfLife = i.half_life('y',unc=False)
         self.daughters = np.array(i.decay_products())
     
     
@@ -88,7 +92,7 @@ class RadioNuclei(Nuclei):
         Erelease = decayprod.MassDefect(self)
         if not decayprod.stable:
             decayprod = RadioNuclei(decayprod.name)
-        return decayprod , Erelease
+        return decayprod , Erelease,1
     
     def decayPath(self):
         """
