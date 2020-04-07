@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 
 from ParticleClass import Nuclei, RadioNuclei
 
+
+c = scipy.constants.speed_of_light
+
 def randomNumber(min, max):
     """
     This function gets a random number from a uniform distribution between
@@ -15,44 +18,12 @@ def randomNumber(min, max):
     ran = np.random.uniform(0,1)
     return min + ran*range
 
-def crudeMonteCarlo(sampleNum, t ):
-    """
-    A very basic Monte Carlo simulation
-    will run for sampleNum number of times and return and average number of sucesses
-    FuncX may be any function assuming that the value returned is a probability between 0 and 1
-    """
-    
-    runningTot = 0.0
-
-    for i in range(sampleNum):
-        if Probability(t):
-            runningTot += 1
-
-    return runningTot
-
-
-def Probability(deltaT):
-    """
-    A comparison to find if a given particle decays in timestep deltaT
-    Uses the decay constant of carbon 14
-    Returns 1 if the particle decays and 0 if it doesn't
-    """
-    x = randomNumber(0,1)
-    Dconst = 0.00012096809
-    P= Dconst * deltaT
-
-    if x<=P:
-        return True
-    else:
-        return False
-
-
-
 def ObjectMonteCarlo(sample, t ):
     """
-    A variant of the curde Monte Carlo function designed to run using a Nuclei object
-    Uses the decay constant of the Nuclei and the random number generator to determine whether it decays
-    Returns a boolean true if the nuclei decays
+    A developped function designed to be repeatedly looped for a Monte Carlo method
+    Recieves a RadioNuclei object and a time to be analysed over
+    Uses the decay constant of the Nuclei object and the random number generator to determine whether it decays
+    Returns a boolean, true if the nuclei object decays
     """
     
     x = randomNumber(0,1)
@@ -66,13 +37,13 @@ def decayloop(Nucleus, t):
     """
     Using an unstable nucleus runs the ObjectMonteCarlo function to determine if it decays
     Takes in a nucleus and a timestep to pass to the Monte Carlo function
-    Returns the new nucleus and the decay energy released
+    Returns the new nucleus and the decay energy released or the original nucleus and 0s if no decay occured
     """
     if not Nucleus.stable:
         if ObjectMonteCarlo(Nucleus,t):
-            Nucleus , DEnergy, DecayNum = Nucleus.decay()
-            return Nucleus , DEnergy, DecayNum
-    return Nucleus , 0 , 0
+            Nucleus , HeatEnergy, EnergyLoss = Nucleus.decay()
+            return Nucleus , HeatEnergy, 1,EnergyLoss
+    return Nucleus , 0 , 0,0
 
 def timestep(t,Particles):
     """
@@ -81,51 +52,57 @@ def timestep(t,Particles):
     returns the updated array of particles and the decay energy released in this timestep
     """
     i=0
-    DEnergy = 0
+    DHeatEnergy = 0
     DecayNum = 0
+    DTotalEnergy = 0
     newArray=Particles
     for cell in newArray:
-        newArray[i], DE ,DN = decayloop(cell,t)
-        DEnergy +=DE
+        newArray[i], DHE ,DN,E = decayloop(cell,t)
+        DHeatEnergy +=DHE
         DecayNum +=DN
+        DTotalEnergy+=E
         i+=1
     
-    return newArray, DEnergy,DecayNum
+    return newArray, DHeatEnergy,DecayNum,DTotalEnergy
 
 
 def MonteCarloLoop(Tend,Particles,tstep,SimNum=0):
     """
     Function to run a Monte Carlo simulation over a given period for an array of nuclei
-    Takes in end time timit, the timestep, and an array of nuclei to run the checks per timestep
+    Takes in the end time timit, the timestep, and an array of nuclei to run the checks per timestep
     Assumes at T=0 all the particles are as inputted and Delta E = 0
     SimNum is the number of the simulation being run, this is not used but the multiprocessing pool requires to send an iterable list of numbers
-    Returns the array of unstable particle number, cummulative energy released at each timestep, and  cummulative number of decays at each timestep
+    Returns an array of unstable particle numbers, cummulative energy released, total system energy, and cummulative number of decays at each timestep
     """
-    Energy = np.zeros((1,2))
+    InitialEnergy = 0
+    for each in Particles:
+        InitialEnergy += each.mass * c**2
     UnstableNum = np.array([[0,Particles.size]])
     Decays = np.zeros((1,2))
-
-    TotalEnergy = 0
+    DecayEnergy =  np.zeros((1,2))
+    SystemEnergy =  np.array([[0,InitialEnergy]])
+    TotalHeatEnergy = 0
     TotalDecays = 0
+    TotalLostEnergy = 0
     T=tstep
 
-    while T<=Tend:
-        if T==tstep:
-            for each in Particles:
-                if each.stable:
-                    print(np.where(Particles == each))
-                    print(each.name)
-        
+    while T<=Tend:        
+        MassEnergy = 0
         instability = 0
-        Particles, DEnergy , DecayNum = timestep(tstep,Particles)
-        TotalEnergy +=DEnergy
+        Particles, HeatEnergy , DecayNum,LostE = timestep(tstep,Particles)
+        TotalLostEnergy += LostE
+        TotalHeatEnergy +=HeatEnergy
+        for each in Particles:
+            MassEnergy += each.mass * c**2
+
         TotalDecays +=DecayNum
         for cell in Particles:
             if not cell.stable:
                 instability+=1
 
-        Energy = np.append(Energy,[[T,TotalEnergy]],axis=0)
+        DecayEnergy = np.append(DecayEnergy,[[T,TotalHeatEnergy]],axis=0)
         UnstableNum = np.append(UnstableNum,[[T,instability]],axis=0)
         Decays = np.append(Decays, [[T,TotalDecays]],axis=0)
+        SystemEnergy = np.append(SystemEnergy,[[T,TotalLostEnergy+MassEnergy]],axis=0)
         T+=tstep
-    return Energy , UnstableNum, Decays
+    return DecayEnergy , UnstableNum, Decays, SystemEnergy
