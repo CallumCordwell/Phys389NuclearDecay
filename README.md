@@ -1,5 +1,5 @@
 # Phys389NuclearDecay
- Lancaster University Phys389 project to simulate Nuclear Decays:
+ Lancaster University Phys389 project to simulate Nuclear Decays, available on GitHub at https://github.com/CallumCordwell/Phys389NuclearDecay:
   Core is the main file that launches the simulation using multiprocessing.
   MonteCarlo is the file that runs the majority of the satistical Monte Carlo simulation functions.
   ParticleClass contains the object classes for nuclei and radionuclei.
