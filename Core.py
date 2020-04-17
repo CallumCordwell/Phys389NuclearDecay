@@ -32,9 +32,14 @@ def startUp():
     ToBeMade = np.array([["60","197BIm"],["10","231PA"],['10','81KR'],["10","85KR"],['10','171ER'],['10','241AM']])
     Particles = functions.CreateParticles(ToBeMade)
 
-    MCNum = 5
+    MCNum = 500
     tstep=1
-    Tend=18000
+    Tend=1800
+    
+    string=''
+    for i in range(ToBeMade.shape[0]):
+        string=string + ToBeMade[i,0] +' ' +ToBeMade[i,1]+ ', '
+    print('Simulation initilised using: ' + string)
 
     return MCNum,tstep,Tend,Particles
 
@@ -78,5 +83,6 @@ if __name__ ==  "__main__":
 
 
     functions.dataPlot(decayEnergy,systemEnergy,decays,stability)
+    
 
 
